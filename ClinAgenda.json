@@ -1,0 +1,639 @@
+{
+  "name": "ClinAgenda",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "test",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2592,
+        -752
+      ],
+      "id": "254d1a34-81d0-4955-a332-0d925a781cba",
+      "name": "App",
+      "webhookId": "93dea416-8662-464d-8ccf-40fe104d7ae6"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -2496,
+        -448
+      ],
+      "id": "3536a719-8798-40f5-8c0c-26ec4e9a7d2e",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "s3bMGuixZ7AFfEi2",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "dslwebdesignerpro12@gmail.com",
+          "mode": "list",
+          "cachedResultName": "dslwebdesignerpro12@gmail.com"
+        },
+        "start": "={{ $fromAI('start', 'Data e hora de início ISO 8601', 'string') }}",
+        "end": "={{ $fromAI('end', 'Data e hora de fim ISO 8601', 'string') }}",
+        "additionalFields": {
+          "description": "=Tel: {{ $fromAI('telefone', 'Telefone do paciente', 'string') }}",
+          "summary": "=Consulta - {{ $fromAI('nome', 'Nome completo do paciente', 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -2208,
+        -448
+      ],
+      "id": "a8856a27-0e28-4979-bbcd-c6ad9111f603",
+      "name": "Agendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Ig1aUmzEc6PQsb8L",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://evolution-evolution-api.q6m8pu.easypanel.host/message/sendText/connect",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "863883C0D5CF-4AB7-8825-FDB00DFD2161"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            },
+            {
+              "name": "number",
+              "value": "={{ $('App').item.json.body.data.key.remoteJid.split('@')[0]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1760,
+        -752
+      ],
+      "id": "3b60f2ba-0251-48f9-99af-a57d63ed0d0d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "dslwebdesignerpro12@gmail.com",
+          "mode": "list",
+          "cachedResultName": "dslwebdesignerpro12@gmail.com"
+        },
+        "timeMin": "={{ $fromAI('inicio', 'Data e hora que o paciente quer consultar, ISO 8601', 'string') }}",
+        "timeMax": "={{ $fromAI('fim', 'Data e hora de fim da janela a verificar, ISO 8601', 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -1792,
+        -448
+      ],
+      "id": "2c2afd47-3a4d-4943-8ca4-7275028e80df",
+      "name": "Disponibilidade",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Ig1aUmzEc6PQsb8L",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "={{ $fromAI('telefone', 'Telefone do paciente', 'string') }}",
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "dslwebdesignerpro12@gmail.com",
+          "mode": "list",
+          "cachedResultName": "dslwebdesignerpro12@gmail.com"
+        },
+        "eventId": "={{ $fromAI('event_id', 'ID do evento da consulta a ser remarcada', 'string') }}",
+        "updateFields": {
+          "end": "={{ $fromAI('novo_fim', 'Nova data e hora de fim ISO 8601', 'string') }}",
+          "start": "={{ $fromAI('novo_inicio', 'Nova data e hora de início ISO 8601', 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -1664,
+        -448
+      ],
+      "id": "5d6c8f50-d139-4f2b-a9e0-35e1958288a4",
+      "name": "Remarcar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Ig1aUmzEc6PQsb8L",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use esta ferramenta IMEDIATAMENTE após criar uma consulta com sucesso (após usar a ferramenta Agendar). Salve o telefone, nome, event_id retornado pelo Google Calendar e a data da consulta.",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "14wsQfhYTDJVuFz0Q5CQOGSnJoq-3jr299pCgLCa5zQE",
+          "mode": "list",
+          "cachedResultName": "Agendamento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14wsQfhYTDJVuFz0Q5CQOGSnJoq-3jr299pCgLCa5zQE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "PAGINA01",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14wsQfhYTDJVuFz0Q5CQOGSnJoq-3jr299pCgLCa5zQE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "NOME": "={{ $fromAI('nome', 'Nome completo do paciente', 'string') }}",
+            "TELEFONE": "={{ $fromAI('telefone', 'Telefone do paciente', 'string') }}",
+            "DATA_CONSULTA": "={{ DateTime.fromISO($fromAI('data_consulta', 'Data e hora da consulta em formato ISO 8601, ex: 2026-07-08T14:00:00', 'string')).toFormat('dd/MM/yyyy HH:mm') }}",
+            "EVENT_ID": "={{ $fromAI('event_id', 'ID do evento retornado ao criar a consulta no Google Calendar', 'string') }}",
+            "STATUS": "AGENDADO"
+          },
+          "matchingColumns": [
+            "NOME"
+          ],
+          "schema": [
+            {
+              "id": "NOME",
+              "displayName": "NOME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "TELEFONE",
+              "displayName": "TELEFONE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "DATA_CONSULTA",
+              "displayName": "DATA_CONSULTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EVENT_ID",
+              "displayName": "EVENT_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2064,
+        -448
+      ],
+      "id": "c26b94eb-c323-43f1-9b8c-1e8bb5f6f768",
+      "name": "Salva Agenda",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "FwLcFxCxKZrzOaR4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use esta ferramenta para buscar o event_id de um agendamento existente, pesquisando pelo nome do paciente. Use isso ANTES de remarcar ou cancelar uma consulta, para obter o event_id necessário",
+        "documentId": {
+          "__rl": true,
+          "value": "14wsQfhYTDJVuFz0Q5CQOGSnJoq-3jr299pCgLCa5zQE",
+          "mode": "list",
+          "cachedResultName": "Agendamento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14wsQfhYTDJVuFz0Q5CQOGSnJoq-3jr299pCgLCa5zQE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "PAGINA01",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14wsQfhYTDJVuFz0Q5CQOGSnJoq-3jr299pCgLCa5zQE/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "NOME",
+              "lookupValue": "={{ $fromAI('nome_busca', 'Nome do paciente para localizar o agendamento existente') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -1920,
+        -448
+      ],
+      "id": "bbd717dd-f722-4a9d-a348-bdf2d8cd51ce",
+      "name": "Lookup",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "FwLcFxCxKZrzOaR4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "teste02"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -2352,
+        -432
+      ],
+      "id": "84156175-bf75-4503-b267-b520bbca1abf",
+      "name": "Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Atualiza o status do agendamento para CANCELADO na planilha, após confirmar o cancelamento no Google Calendar",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "14wsQfhYTDJVuFz0Q5CQOGSnJoq-3jr299pCgLCa5zQE",
+          "mode": "list",
+          "cachedResultName": "Agendamento",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14wsQfhYTDJVuFz0Q5CQOGSnJoq-3jr299pCgLCa5zQE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "PAGINA01",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14wsQfhYTDJVuFz0Q5CQOGSnJoq-3jr299pCgLCa5zQE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TELEFONE": "={{ $fromAI('telefone', 'número de telefone do paciente que está cancelando') }}",
+            "STATUS": "CANCELADO"
+          },
+          "matchingColumns": [
+            "TELEFONE"
+          ],
+          "schema": [
+            {
+              "id": "NOME",
+              "displayName": "NOME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONE",
+              "displayName": "TELEFONE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "DATA_CONSULTA",
+              "displayName": "DATA_CONSULTA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "EVENT_ID",
+              "displayName": "EVENT_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -1424,
+        -448
+      ],
+      "id": "b202ad66-ece3-44fb-b351-386649541f2d",
+      "name": "Atualiza Cancelamento",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "FwLcFxCxKZrzOaR4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -2768,
+        -432
+      ],
+      "id": "80d1d287-2cfc-493f-bc91-e3b54bc11380",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "IbGCrdjMVLWYjFEt",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "dslwebdesignerpro12@gmail.com",
+          "mode": "list",
+          "cachedResultName": "dslwebdesignerpro12@gmail.com"
+        },
+        "eventId": "={{ $fromAI('event_id', 'ID do evento a ser cancelado, obtido pela tool Lookup') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        -1552,
+        -448
+      ],
+      "id": "bb5d75ad-d2d2-4529-b0f6-28aaabdd22a3",
+      "name": "Cancelar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "Ig1aUmzEc6PQsb8L",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.data.message.conversation }}",
+        "options": {
+          "systemMessage": "=# Recepcionista Virtual - Clara\n\nVocê é Bruna, recepcionista virtual profissional, educada e humanizada da Clínica Life. Seu objetivo é realizar agendamento, remarcação e cancelamento de consultas.\n\nData e hora atual: {{ $now }}\nUse esta informação como referência para calcular corretamente datas mencionadas pelo paciente (hoje, amanhã, \"dia 12/07\", etc). Nunca calcule uma data sem usar essa referência.\n\n## Identificação obrigatória\n\nNa PRIMEIRA mensagem de qualquer conversa, antes de qualquer outra coisa, você deve se apresentar claramente pelo nome, dizendo que é a Bruna, recepcionista virtual da Clínica Life. Nunca pule essa apresentação, mesmo que o paciente já vá direto ao assunto (ex: \"quero marcar uma consulta\"). Primeiro se apresente, depois continue o atendimento.\n\n## Sua missão\n\nQuando o paciente iniciar a conversa, dê boas-vindas à Clínica Life antes de qualquer outra coisa (junto com sua apresentação acima).\n\nPara um NOVO AGENDAMENTO, você NÃO pode encerrar a coleta de dados enquanto não obter todas as informações abaixo:\n\n* Nome completo do cliente.\n* Telefone para contato.\n* Data desejada para o agendamento.\n* Horário desejado para o agendamento.\n\nEssas quatro informações são obrigatórias apenas para agendamentos novos. Para remarcação e cancelamento, siga as seções específicas abaixo.\n\n## Regras de conversa\n\n* Converse de forma natural, cordial e objetiva.\n* Faça apenas uma pergunta por vez.\n* Se o cliente fornecer apenas parte das informações, agradeça e solicite apenas as que ainda faltam.\n* Nunca peça novamente uma informação que já foi informada.\n* Caso o cliente responda de forma incompleta, continue a conversa até obter todos os dados.\n* Não invente informações.\n* Não informe horários disponíveis por conta própria — sempre verifique com a ferramenta correta.\n* Você pode utilizar emojis discretos, como 😊, 📅 e 📞, mantendo sempre um tom profissional.\n* Nunca escreva o nome de uma ferramenta ou algo como \"<function=...>\" na resposta ao paciente. Sempre execute a ferramenta de verdade quando precisar dela — nunca simule ou descreva a chamada em texto.\n\n## O que fazer após coletar os 4 dados (NOVO AGENDAMENTO)\n\nAssim que tiver nome completo, telefone, data e horário, siga esta ordem, sem pular etapas:\n\n1. Use a ferramenta Disponibilidade para verificar se o horário está livre.\n2. Se estiver ocupado: informe o paciente e pergunte se deseja outro horário. Volte ao passo 1 quando ele responder.\n3. Se estiver livre: use a ferramenta Agendar para criar a consulta.\n4. Após o agendamento ser criado com sucesso, use a ferramenta Salva Agenda para registrar o telefone, nome, event_id (retornado pela ferramenta Agendar) e data da consulta.\n5. Só então confirme ao paciente que o agendamento foi realizado, informando data e horário.\n\n## Remarcação de consulta\n\nSe o paciente pedir para remarcar uma consulta já existente:\n\n1. Pergunte (se ainda não souber) o novo dia e horário desejado.\n2. Use a ferramenta Lookup para buscar o event_id do agendamento atual, usando o nome completo do paciente.\n3. Use a ferramenta Disponibilidade para verificar se o novo horário está livre.\n4. Se livre, use a ferramenta de remarcação (Remarcar) com o event_id encontrado e o novo horário.\n5. Confirme a remarcação ao paciente.\n\n## Cancelamento de consulta\n\nSe o paciente pedir para cancelar uma consulta já existente:\n\n1. Se ainda não souber, peça o nome completo usado no agendamento para localizá-lo.\n2. Use a ferramenta Lookup para buscar o event_id do agendamento atual, usando o nome completo do paciente.\n3. Se não encontrar nenhum agendamento para esse nome, informe educadamente ao paciente e pergunte se ele confirma o nome completo.\n4. Encontrado o event_id, use a ferramenta Delete an event in Google Calendar passando esse event_id para cancelar a consulta.\n5. Após o cancelamento ser confirmado pela ferramenta, use a ferramenta de atualização de status (Atualiza Status Cancelamento) para marcar o registro como CANCELADO na planilha, usando o nome completo do paciente.\n6. Só então confirme ao paciente que a consulta foi cancelada com sucesso.\n7. Nunca confirme um cancelamento ao paciente sem antes ter chamado as ferramentas de exclusão e atualização de status, nessa ordem.\n\n## Comportamento obrigatório\n\nAntes de responder qualquer mensagem, verifique mentalmente:\n* Se é um agendamento novo, remarcação ou cancelamento.\n* Quais dados obrigatórios para essa etapa já foram obtidos.\n* Se a etapa atual exige chamar uma ferramenta antes de responder ao paciente.\n\nSomente quando os quatro campos estiverem preenchidos (no caso de novo agendamento) E você estiver pronta para seguir a ordem de agendamento acima, você deve dizer:\n\n\"Perfeito! Já tenho todas as informações necessárias para dar continuidade ao seu agendamento.\"\n\nNunca diga essa frase antes de possuir todos os dados necessários para a etapa em questão, e nunca a use como substituto de realmente chamar as ferramentas.\n\n## Exemplo de fluxo de coleta (novo agendamento)\n\nCliente:\n\"Olá.\"\n\nBruna:\n\"Olá! Sou a Bruna, recepcionista virtual da Clínica Life! 😊 Para realizar seu agendamento, preciso de algumas informações. Qual é o seu nome completo?\"\n\nApós obter o nome:\n\"Obrigado! Agora poderia informar seu telefone para contato? 📞\"\n\nApós obter o telefone:\n\"Perfeito! Qual data você deseja para o agendamento? 📅\"\n\nApós obter a data:\n\"Ótimo! E qual horário você prefere?"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2224,
+        -752
+      ],
+      "id": "6f2b8900-7cbf-4e15-b47f-0dd242367648",
+      "name": "Recepcionista - Clara"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "App": {
+      "main": [
+        [
+          {
+            "node": "Recepcionista - Clara",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Recepcionista - Clara",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "Recepcionista - Clara",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disponibilidade": {
+      "ai_tool": [
+        [
+          {
+            "node": "Recepcionista - Clara",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remarcar": {
+      "ai_tool": [
+        [
+          {
+            "node": "Recepcionista - Clara",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva Agenda": {
+      "ai_tool": [
+        [
+          {
+            "node": "Recepcionista - Clara",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup": {
+      "ai_tool": [
+        [
+          {
+            "node": "Recepcionista - Clara",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Recepcionista - Clara",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualiza Cancelamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "Recepcionista - Clara",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Cancelar": {
+      "ai_tool": [
+        [
+          {
+            "node": "Recepcionista - Clara",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recepcionista - Clara": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ce244c4b-85d7-4d16-9a9e-bd0d09db6c29",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b2e95d6b701d443b603f489196f1f340f7e5c47b27e5f7a1a32e9a182cd5d3fd"
+  },
+  "nodeGroups": [],
+  "id": "1kCQcixZqoXGdHFc",
+  "tags": []
+}
